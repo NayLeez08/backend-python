@@ -229,11 +229,25 @@ la validación de entradas, la clave de API y el comportamiento sin modelo.
 
 ## Despliegue en Render
 
-El archivo `render.yaml`, en la raíz del repositorio, define el servicio. Solo se instala y ejecuta
-la carpeta `backend/`.
+El servicio se construye desde la **raíz del repositorio** (no hace falta configurar *Root Directory*)
+y solo instala y ejecuta la carpeta `backend/`:
+
+- `requirements.txt` (raíz) remite a `backend/requirements.txt`: no instala pandas ni matplotlib.
+- `.python-version` fija Python 3.12.1, la versión con la que se entrenó y probó el modelo.
+- `render.yaml` define el servicio si se crea como Blueprint.
 
 1. Sube el proyecto a un repositorio de GitHub (`.gitignore` ya excluye el entorno virtual y los datos originales).
-2. En Render: **New → Blueprint**, elige el repositorio y escribe el valor de `API_KEY` cuando lo pida.
+2. En Render, **New → Blueprint** y elige el repositorio; escribe el valor de `API_KEY` cuando lo pida.
+   Si creas el servicio a mano (**New → Web Service**), usa:
+
+   | Campo | Valor |
+   |---|---|
+   | Root Directory | *(vacío)* |
+   | Build Command | `pip install -r requirements.txt` |
+   | Start Command | `uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT` |
+   | Health Check Path | `/api/v1/salud` |
+   | Variables | `API_KEY` (y opcionalmente `PYTHON_VERSION=3.12.1`) |
+
 3. Comprueba `https://<tu-servicio>.onrender.com/api/v1/salud`: debe responder `"estado": "ok"`.
 4. En Spring Boot define estas variables:
 
